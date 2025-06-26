@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV Dashboard - Personnel Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        .slideshow-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+        
+        .slide {
+            display: none;
+            padding: 40px;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .slide.active {
+            display: block;
+        }
+        
+        .slide-header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid rgba(255,255,255,0.3);
+            padding-bottom: 15px;
+            margin-top: 80px;
+        }
+        
+        .slide-header h1 {
+            font-size: 2.8em;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .slide-header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .overview-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .stat-number {
+            font-size: 4em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .stat-label {
+            font-size: 1.3em;
+            opacity: 0.9;
+        }
+        
+        .platform-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            max-height: 70vh;
+            overflow: hidden;
+        }
+        
+        .platform-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s ease;
+            max-height: 300px;
+            overflow: hidden;
+        }
+        
+        .platform-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .platform-name {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+            padding: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 6px;
+        }
+        
+        .rig-platform {
+            border-left: 5px solid #ff6b6b;
+        }
+        
+        .regular-platform {
+            border-left: 5px solid #4ecdc4;
+        }
+        
+        .personnel-list {
+            margin-top: 15px;
+        }
+        
+        .person-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px;
+            margin: 4px 0;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.1);
+            font-size: 0.9em;
+        }
+        
+        .person-name {
+            font-weight: 600;
+        }
+        
+        .person-position {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+        
+        .days-badge {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        .days-normal { background: #27ae60; }
+        .days-warning { background: #f39c12; }
+        .days-critical { background: #e74c3c; }
+        
+        .shortage-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+        }
+        
+        .shortage-card {
+            background: rgba(231, 76, 60, 0.2);
+            border: 2px solid #e74c3c;
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .shortage-platform {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #ff6b6b;
+        }
+        
+        .shortage-positions {
+            font-size: 1.2em;
+            line-height: 1.6;
+        }
+        
+        .critical-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+        }
+        
+        .critical-card {
+            background: rgba(231, 76, 60, 0.2);
+            border: 2px solid #e74c3c;
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .critical-person {
+            text-align: center;
+        }
+        
+        .critical-name {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .critical-details {
+            font-size: 1.2em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        
+        .critical-days {
+            font-size: 2em;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+        
+        .slide-nav {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-dot {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-dot.active {
+            background: white;
+            transform: scale(1.2);
+        }
+        
+        .slide-counter {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            font-size: 1.2em;
+            background: rgba(0,0,0,0.3);
+            padding: 10px 20px;
+            border-radius: 25px;
+        }
+        
+        .date-display {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            font-size: 1.2em;
+            background: rgba(0,0,0,0.3);
+            padding: 10px 20px;
+            border-radius: 25px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .slide.active {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="slideshow-container">
+        <div class="date-display" id="current-date"></div>
+        <div class="slide-counter">
+            <span id="current-slide">1</span> / 6
+        </div>
+        
+        <!-- Slide 1: Overview -->
+        <div class="slide active">
+            <div class="slide-header">
+                <h1>🏭 Personnel Management Overview</h1>
+                <p>Power Mech Services Pvt. Ltd. - Live Dashboard</p>
+            </div>
+            
+            <div class="overview-stats">
+                <div class="stat-card">
+                    <div class="stat-number">{{ total_personnel }}</div>
+                    <div class="stat-label">Total Personnel</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ active_platforms }}</div>
+                    <div class="stat-label">Active Platforms</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ total_shortages }}</div>
+                    <div class="stat-label">Position Shortages</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ critical_personnel }}</div>
+                    <div class="stat-label">Critical (>100 days)</div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; font-size: 1.5em; margin-top: 50px;">
+                <p>📊 Real-time monitoring of workforce deployment across oil & gas operations</p>
+                <p style="margin-top: 20px; opacity: 0.8;">Platforms • Rigs • Personnel Tracking • Safety Compliance</p>
+            </div>
+        </div>
+        
+        <!-- Slide 2: Platforms 1-11 -->
+        <div class="slide">
+            <div class="slide-header">
+                <h1>🏗️ Platforms Overview (1-11)</h1>
+                <p>Current personnel deployment status</p>
+            </div>
+            
+            <div class="platform-grid">
+                {% for platform_name, people in platforms_page1.items() %}
+                <div class="platform-card {% if platform_name.startswith('SAGAR') %}rig-platform{% else %}regular-platform{% endif %}">
+                    <div class="platform-name">
+                        {{ platform_name }}
+                        {% if platform_name.startswith('SAGAR') %}
+                        <span style="font-size: 0.7em; color: #ff6b6b;">(RIG)</span>
+                        {% endif %}
+                    </div>
+                    
+                    {% if people %}
+                        <div class="personnel-list">
+                            {% for person in people %}
+                            <div class="person-item">
+                                <div>
+                                    <div class="person-name">{{ person.name }}</div>
+                                    <div class="person-position">{{ person.position }}</div>
+                                </div>
+                                <div class="days-badge {% if person.days > 100 %}days-critical{% elif person.days > 60 %}days-warning{% else %}days-normal{% endif %}">
+                                    {{ person.days }} days
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div style="text-align: center; opacity: 0.7; font-style: italic; padding: 20px;">
+                            No personnel assigned
+                        </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Slide 3: Platforms 12-22 -->
+        <div class="slide">
+            <div class="slide-header">
+                <h1>⚙️ Platforms Overview (12-22)</h1>
+                <p>Current personnel deployment status</p>
+            </div>
+            
+            <div class="platform-grid">
+                {% for platform_name, people in platforms_page2.items() %}
+                <div class="platform-card regular-platform">
+                    <div class="platform-name">{{ platform_name }}</div>
+                    
+                    {% if people %}
+                        <div class="personnel-list">
+                            {% for person in people %}
+                            <div class="person-item">
+                                <div>
+                                    <div class="person-name">{{ person.name }}</div>
+                                    <div class="person-position">{{ person.position }}</div>
+                                </div>
+                                <div class="days-badge {% if person.days > 100 %}days-critical{% elif person.days > 60 %}days-warning{% else %}days-normal{% endif %}">
+                                    {{ person.days }} days
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div style="text-align: center; opacity: 0.7; font-style: italic; padding: 15px; font-size: 0.9em;">
+                            No personnel assigned
+                        </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Slide 4: SAGAR Rigs -->
+        <div class="slide">
+            <div class="slide-header">
+                <h1>🚢 SAGAR Rigs Overview</h1>
+                <p>Offshore drilling rig personnel status</p>
+            </div>
+            
+            <div class="platform-grid">
+                {% for platform_name, people in all_rigs.items() %}
+                <div class="platform-card rig-platform">
+                    <div class="platform-name">
+                        {{ platform_name }}
+                        <span style="font-size: 0.7em; color: #ff6b6b;">(RIG)</span>
+                    </div>
+                    
+                    {% if people %}
+                        <div class="personnel-list">
+                            {% for person in people %}
+                            <div class="person-item">
+                                <div>
+                                    <div class="person-name">{{ person.name }}</div>
+                                    <div class="person-position">{{ person.position }}</div>
+                                </div>
+                                <div class="days-badge {% if person.days > 100 %}days-critical{% elif person.days > 60 %}days-warning{% else %}days-normal{% endif %}">
+                                    {{ person.days }} days
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div style="text-align: center; opacity: 0.7; font-style: italic; padding: 20px;">
+                            No personnel assigned
+                        </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Slide 5: Position Shortages -->
+        <div class="slide">
+            <div class="slide-header">
+                <h1>⚠️ Position Shortages</h1>
+                <p>Platforms requiring immediate attention</p>
+            </div>
+            
+            {% if shortages %}
+                <div class="shortage-list">
+                    {% for platform, positions in shortages.items() %}
+                    <div class="shortage-card">
+                        <div class="shortage-platform">{{ platform }}</div>
+                        <div class="shortage-positions">
+                            <strong>Missing Positions:</strong><br>
+                            {% for position in positions %}
+                                • {{ position }}<br>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="text-align: center; font-size: 2em; margin-top: 100px; opacity: 0.8;">
+                    🎉 All positions are currently filled!<br>
+                    <span style="font-size: 0.6em; margin-top: 20px;">Excellent workforce deployment status</span>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Slide 6: Critical Personnel -->
+        <div class="slide">
+            <div class="slide-header">
+                <h1>🔴 Critical Personnel (>100 days)</h1>
+                <p>Personnel requiring rotation consideration</p>
+            </div>
+            
+            {% if critical_people %}
+                <div class="critical-list">
+                    {% for person in critical_people %}
+                    <div class="critical-card">
+                        <div class="critical-person">
+                            <div class="critical-name">{{ person.name }}</div>
+                            <div class="critical-details">
+                                {{ person.platform }} - {{ person.position }}
+                            </div>
+                            <div class="critical-days">{{ person.days }} days</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="text-align: center; font-size: 2em; margin-top: 100px; opacity: 0.8;">
+                    ✅ No critical personnel currently!<br>
+                    <span style="font-size: 0.6em; margin-top: 20px;">All personnel are within safe deployment periods</span>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Navigation -->
+        <div class="slide-nav">
+            <div class="nav-dot active" onclick="currentSlide(1)"></div>
+            <div class="nav-dot" onclick="currentSlide(2)"></div>
+            <div class="nav-dot" onclick="currentSlide(3)"></div>
+            <div class="nav-dot" onclick="currentSlide(4)"></div>
+            <div class="nav-dot" onclick="currentSlide(5)"></div>
+            <div class="nav-dot" onclick="currentSlide(6)"></div>
+        </div>
+    </div>
+
+    <script>
+        let slideIndex = 1;
+        const totalSlides = 6;
+        
+        function showSlide(n) {
+            const slides = document.querySelectorAll('.slide');
+            const dots = document.querySelectorAll('.nav-dot');
+            
+            if (n > totalSlides) slideIndex = 1;
+            if (n < 1) slideIndex = totalSlides;
+            
+            slides.forEach(slide => slide.classList.remove('active'));
+            dots.forEach(dot => dot.classList.remove('active'));
+            
+            slides[slideIndex - 1].classList.add('active');
+            dots[slideIndex - 1].classList.add('active');
+            
+            document.getElementById('current-slide').textContent = slideIndex;
+        }
+        
+        function currentSlide(n) {
+            slideIndex = n;
+            showSlide(slideIndex);
+        }
+        
+        function nextSlide() {
+            slideIndex++;
+            showSlide(slideIndex);
+        }
+        
+        // Auto-advance slides every 15 seconds
+        setInterval(nextSlide, 15000);
+        
+        // Update date and time
+        function updateDateTime() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
+        }
+        
+        updateDateTime();
+        setInterval(updateDateTime, 60000); // Update every minute
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowRight' || event.key === ' ') {
+                nextSlide();
+            } else if (event.key === 'ArrowLeft') {
+                slideIndex--;
+                showSlide(slideIndex);
+            }
+        });
+    </script>
+</body>
+</html>
